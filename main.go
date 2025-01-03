@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-func Validate() bool {
+func Validate(text string) bool {
 	filter := FilterNew()
 	err := filter.LoadWordDict("dict/dict.txt")
 	if err != nil {
 		return false
 	}
-	flag, _ := filter.Validate("我操")
+	flag, _ := filter.Validate(text)
 	fmt.Println(flag)
 	return flag
 }
