@@ -1,4 +1,4 @@
-package sensitive0
+package main
 
 import (
 	"bufio"
@@ -10,9 +10,12 @@ import (
 	"time"
 )
 
+func main() {
+	Validate("你好")
+}
 func Validate(text string) bool {
 	filter := FilterNew()
-	err := filter.LoadWordDict("dict/dict.txt")
+	err := filter.LoadWordDict("./dict/dict.txt")
 	if err != nil {
 		return false
 	}
