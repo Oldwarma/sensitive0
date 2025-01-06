@@ -2,28 +2,77 @@ package main
 
 import (
 	"bufio"
+	"embed"
+	_ "embed"
 	"fmt"
-
 	"io"
 	"net/http"
-	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
-func main() {
-	fmt.Println()
+//go:embed dict.txt
+var dict embed.FS
 
+func main() {
+	filter := FilterNew()
+	err := filter.LoadWordDict()
+	if err != nil {
+		fmt.Println("加载字典失败:", err)
+		return
+	}
+	flag, _ := filter.Validate("你好")
+	fmt.Println(flag)
+	flag, _ = filter.Validate("傻逼")
+	fmt.Println(flag)
 }
 func Validate(text string) bool {
 	filter := FilterNew()
-	err := filter.LoadWordDict("./dict/dict.txt")
-	if err != nil {
-		return false
-	}
-	flag, _ := filter.Validate(text)
-	fmt.Println(flag)
+	_ = filter.LoadWordDict()
+
+	flag, _ := filter.Validate("你好")
+
 	return flag
+}
+func (filter *Filter) LoadWordDict() error {
+	content, err := dict.ReadFile("dict.txt")
+	if err != nil {
+		return err
+	}
+	cleanContent := strings.ReplaceAll(string(content), "\r", "")
+	lines := strings.Split(cleanContent, "\n")
+
+	for _, line := range lines {
+		if line != "" {
+			filter.trie.Add(line)
+		}
+	}
+	return nil
+}
+
+// Load common method to add words
+func (filter *Filter) Load(rd io.Reader) error {
+	buf := bufio.NewReader(rd)
+	for {
+		line, _, err := buf.ReadLine()
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+			break
+		}
+		filter.trie.Add(string(line))
+	}
+
+	return nil
+}
+
+// Add 添加若干个词
+func (tree *Trie) Add(words ...string) {
+	for _, word := range words {
+		tree.add(word)
+	}
 }
 
 // Filter 敏感词过滤器
@@ -45,17 +94,6 @@ func (filter *Filter) UpdateNoisePattern(pattern string) {
 	filter.noise = regexp.MustCompile(pattern)
 }
 
-// LoadWordDict 加载敏感词字典
-func (filter *Filter) LoadWordDict(path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return filter.Load(f)
-}
-
 // LoadNetWordDict 加载网络敏感词字典
 func (filter *Filter) LoadNetWordDict(url string) error {
 	c := http.Client{
@@ -68,23 +106,6 @@ func (filter *Filter) LoadNetWordDict(url string) error {
 	defer rsp.Body.Close()
 
 	return filter.Load(rsp.Body)
-}
-
-// Load common method to add words
-func (filter *Filter) Load(rd io.Reader) error {
-	buf := bufio.NewReader(rd)
-	for {
-		line, _, err := buf.ReadLine()
-		if err != nil {
-			if err != io.EOF {
-				return err
-			}
-			break
-		}
-		filter.trie.Add(string(line))
-	}
-
-	return nil
 }
 
 // AddWord 添加敏感词
@@ -146,13 +167,6 @@ type Node struct {
 func NewTrie() *Trie {
 	return &Trie{
 		Root: NewRootNode(0),
-	}
-}
-
-// Add 添加若干个词
-func (tree *Trie) Add(words ...string) {
-	for _, word := range words {
-		tree.add(word)
 	}
 }
 
