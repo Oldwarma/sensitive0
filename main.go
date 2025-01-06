@@ -31,7 +31,7 @@ func Validate(text string) bool {
 	filter := FilterNew()
 	_ = filter.LoadWordDict()
 
-	flag, _ := filter.Validate("你好")
+	flag, _ := filter.Validate(text)
 
 	return flag
 }
