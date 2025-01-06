@@ -1,9 +1,10 @@
-package sensitive0
+package main
 
 import (
 	"bufio"
 	"embed"
 	_ "embed"
+	"fmt"
 	"io"
 	"net/http"
 	"regexp"
@@ -14,6 +15,18 @@ import (
 //go:embed dict.txt
 var dict embed.FS
 
+func main() {
+	filter := FilterNew()
+	err := filter.LoadWordDict()
+	if err != nil {
+		fmt.Println("加载字典失败:", err)
+		return
+	}
+	flag, _ := filter.Validate("你好")
+	fmt.Println(flag)
+	flag, _ = filter.Validate("傻逼")
+	fmt.Println(flag)
+}
 func Validate(text string) bool {
 	filter := FilterNew()
 	_ = filter.LoadWordDict()
