@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+
 	"io"
 	"net/http"
 	"os"
@@ -11,7 +12,8 @@ import (
 )
 
 func main() {
-	Validate("你好")
+	fmt.Println()
+
 }
 func Validate(text string) bool {
 	filter := FilterNew()
