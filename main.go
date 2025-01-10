@@ -1,4 +1,4 @@
-package main
+package sensitive0
 
 import (
 	"bufio"
