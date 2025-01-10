@@ -1,4 +1,4 @@
-package sensitive0
+package main
 
 import (
 	"bufio"
@@ -20,13 +20,13 @@ func ValidateOutside(filter *Filter, text string) bool {
 
 	return flag
 }
-func Validate(text string) bool {
+func Validate(text string) (bool, string) {
 	filter := FilterNew()
 	_ = filter.LoadWordDict()
 
-	flag, _ := filter.Validate(text)
+	flag, flagStr := filter.Validate(text)
 
-	return flag
+	return flag, flagStr
 }
 func (filter *Filter) LoadWordDict() error {
 	content, err := dict.ReadFile("dict.txt")
